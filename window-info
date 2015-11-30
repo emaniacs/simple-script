@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+# Get window information from an aplication
+# This script using xprop and notify-send(optional)
+# @author ardi
+# @version 0.1.0
+# @license None
+
+
+APP=`which xprop`
+TMPNAME='/tmp/window-info.tmp'
+
+if [[ -z "$APP" ]]; then
+    echo "xprop not found"
+    exit 255
+fi
+
+xprop > $TMPNAME
+
+pid=`awk '/PID/ {print $3}' $TMPNAME`
+cmd=`awk '/WM_CLASS/ {print $3}' $TMPNAME | tr -d '",'`
+title=`awk '/WM_CLASS/ {print $4}' $TMPNAME | tr -d '",'`
+
+msg="
+Pid: $pid
+Command: $cmd
+title: $title
+"
+
+if test $(which notify-send) != "" ; then
+    notify-send -t 5000 "Window info" "${msg}"
+else
+    echo $msg
+fi
+
+rm -rf $TMPNAME
